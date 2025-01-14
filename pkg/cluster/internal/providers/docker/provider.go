@@ -111,6 +111,52 @@ func (p *provider) ListClusters() ([]string, error) {
 	return sets.NewString(lines...).List(), nil
 }
 
+func getNodeNames(nodes []nodes.Node) []string {
+	ret := make([]string, 0, len(nodes))
+	for _, node := range nodes {
+		ret = append(ret, node.String())
+	}
+	return ret
+}
+
+func (p *provider) StartCluster(cluster string) error {
+	nodes, err := p.ListNodes(cluster)
+	if err != nil {
+		return err
+	}
+	args := append([]string{"start"}, getNodeNames(nodes)...)
+	cmd := exec.Command("docker", args...)
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, "failed to start cluster")
+	}
+
+	args = append([]string{"update", dockerRestartPolicyStartArg}, getNodeNames(nodes)...)
+	cmd = exec.Command("docker", args...)
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, "failed to update cluster's restart policy")
+	}
+	return nil
+}
+
+func (p *provider) StopCluster(cluster string) error {
+	nodes, err := p.ListNodes(cluster)
+	if err != nil {
+		return err
+	}
+	args := append([]string{"stop"}, getNodeNames(nodes)...)
+	cmd := exec.Command("docker", args...)
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, "failed to stop cluster")
+	}
+
+	args = append([]string{"update", dockerRestartPolicyStopArg}, getNodeNames(nodes)...)
+	cmd = exec.Command("docker", args...)
+	if err := cmd.Run(); err != nil {
+		return errors.Wrap(err, "failed to update cluster's restart policy")
+	}
+	return nil
+}
+
 // ListNodes is part of the providers.Provider interface
 func (p *provider) ListNodes(cluster string) ([]nodes.Node, error) {
 	cmd := exec.Command("docker",

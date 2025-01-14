@@ -134,6 +134,14 @@ func (p *provider) ListClusters() ([]string, error) {
 	return sets.NewString(lines...).List(), nil
 }
 
+func (p *provider) StartCluster(cluster string) error {
+	return providers.NotSupportedError
+}
+
+func (p *provider) StopCluster(cluster string) error {
+	return providers.NotSupportedError
+}
+
 // ListNodes is part of the providers.Provider interface
 func (p *provider) ListNodes(cluster string) ([]nodes.Node, error) {
 	cmd := exec.Command(p.Binary(),

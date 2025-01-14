@@ -17,11 +17,15 @@ limitations under the License.
 package providers
 
 import (
+	"errors"
+
 	"sigs.k8s.io/kind/pkg/cluster/nodes"
 
 	"sigs.k8s.io/kind/pkg/internal/apis/config"
 	"sigs.k8s.io/kind/pkg/internal/cli"
 )
+
+var NotSupportedError = errors.New("not supported")
 
 // Provider represents a provider of cluster / node infrastructure
 // This is an alpha-grade internal API
@@ -32,6 +36,8 @@ type Provider interface {
 	// ListClusters discovers the clusters that currently have resources
 	// under this providers
 	ListClusters() ([]string, error)
+	StopCluster(cluster string) error
+	StartCluster(cluster string) error
 	// ListNodes returns the nodes under this provider for the given
 	// cluster name, they may or may not be running correctly
 	ListNodes(cluster string) ([]nodes.Node, error)
